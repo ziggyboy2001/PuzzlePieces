@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
+import { Audio } from 'expo-av';
 import PuzzlePiece from './PuzzlePiece';
 
 const { width } = Dimensions.get('window');
@@ -30,6 +31,7 @@ const PuzzleBoard = ({
   currentBgColor,
   onColorChange
 }) => {
+  const [sound, setSound] = useState();
   const [pieces, setPieces] = useState(initialPieces);
   const [score, setScore] = useState(0);
   const [solvedPieces, setSolvedPieces] = useState(new Set());
@@ -41,12 +43,28 @@ const PuzzleBoard = ({
     setIsSolved(false);
   }, [initialPieces]);
 
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
   const gridSize = Math.sqrt(initialPieces.length);
   const pieceSize = BOARD_SIZE / gridSize;
 
   const isCorrectPosition = (piece) => {
     return piece.correctPosition.x === piece.currentPosition.x &&
            piece.correctPosition.y === piece.currentPosition.y;
+  };
+
+  const playConnectSound = async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      require('../../assets/sounds/connect.wav')
+    );
+    setSound(sound);
+    await sound.playAsync();
   };
 
   const handlePieceMove = (pieceId, newPosition) => {
@@ -77,6 +95,7 @@ const PuzzleBoard = ({
           };
           
           if (isCorrectPosition(newPiece) && !solvedPieces.has(pieceId)) {
+            playConnectSound();
             setScore(prev => prev + 100);
             setSolvedPieces(prev => new Set([...prev, pieceId]));
           }
