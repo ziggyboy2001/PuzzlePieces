@@ -4,11 +4,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PuzzleBoard from './src/components/PuzzleBoard';
 import { createPuzzlePieces } from './src/utils/puzzleUtils';
 
-// Define the puzzle progression
 const CATEGORIES = ['bear', 'giraffe', 'puppy', 'pig', 'compilation'];
+const BG_COLOR = ['#bd24d1', '#8338ec', '#24d1b1', '#d12438', '#d1b724', '#cc6c23'];
 
 export default function App() {
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [currentLevel, setCurrentLevel] = useState('easy');
+  const [bgColor, setBgColor] = useState(BG_COLOR[currentCategoryIndex]);
   const [currentPuzzle, setCurrentPuzzle] = useState({
     id: '1',
     name: 'Bear Puzzle',
@@ -18,40 +20,48 @@ export default function App() {
   });
 
   const handleNextPuzzle = () => {
-    // Move to next category
     const nextCategoryIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
     const nextCategory = CATEGORIES[nextCategoryIndex];
     
-    console.log('Moving to next puzzle:', {
-      fromCategory: CATEGORIES[currentCategoryIndex],
-      toCategory: nextCategory,
-      nextIndex: nextCategoryIndex
-    });
-    
-    setCurrentCategoryIndex(nextCategoryIndex);
-    setCurrentPuzzle(prevPuzzle => {
-      const newPuzzle = {
+    if (nextCategoryIndex === 0 && currentLevel === 'easy') {
+      setCurrentLevel('medium');
+      setBgColor(BG_COLOR[0]);  // Reset color for Level 2
+      setCurrentPuzzle({
         id: String(nextCategoryIndex + 1),
-        name: `${nextCategory.charAt(0).toUpperCase() + nextCategory.slice(1)} Puzzle`,
-        difficulty: 'easy',
-        pieces: createPuzzlePieces(nextCategory, 'easy'),
+        name: `${CATEGORIES[0].charAt(0).toUpperCase() + CATEGORIES[0].slice(1)} Puzzle - Level 2`,
+        difficulty: 'medium',
+        pieces: createPuzzlePieces(CATEGORIES[0], 'medium'),
         completed: false,
-      };
-      console.log('Created new puzzle:', {
-        category: nextCategory,
-        pieceCount: newPuzzle.pieces.length
       });
-      return newPuzzle;
-    });
+    } else {
+      setCurrentCategoryIndex(nextCategoryIndex);
+      setBgColor(BG_COLOR[nextCategoryIndex]);
+      setCurrentPuzzle({
+        id: String(nextCategoryIndex + 1),
+        name: `${nextCategory.charAt(0).toUpperCase() + nextCategory.slice(1)} Puzzle${currentLevel === 'medium' ? ' - Level 2' : ''}`,
+        difficulty: currentLevel,
+        pieces: createPuzzlePieces(nextCategory, currentLevel),
+        completed: false,
+      });
+    }
+  };
+
+  const handleColorChange = (newColor) => {
+    setBgColor(newColor);
   };
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: bgColor }]}>
         <PuzzleBoard
           pieces={currentPuzzle.pieces}
           difficulty={currentPuzzle.difficulty}
           onNextPuzzle={handleNextPuzzle}
+          level={currentLevel}
+          currentCategoryIndex={currentCategoryIndex}
+          bgColors={BG_COLOR}
+          currentBgColor={bgColor}
+          onColorChange={handleColorChange}
         />
       </SafeAreaView>
     </GestureHandlerRootView>
@@ -61,6 +71,5 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
 });

@@ -5,7 +5,8 @@ import PuzzlePiece from './PuzzlePiece';
 const { width } = Dimensions.get('window');
 const BOARD_SIZE = width * 0.9;
 
-// Helper functions defined outside component
+const CATEGORIES = ['bear', 'giraffe', 'puppy', 'pig', 'compilation'];
+
 const getCellIndexFromPosition = (position, pieceSize, gridSize) => {
   const row = Math.floor(position.y / pieceSize);
   const col = Math.floor(position.x / pieceSize);
@@ -19,12 +20,21 @@ const getPositionFromCellIndex = (index, pieceSize, gridSize) => {
   };
 };
 
-const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
+const PuzzleBoard = ({ 
+  pieces: initialPieces, 
+  difficulty, 
+  onNextPuzzle, 
+  level,
+  currentCategoryIndex,
+  bgColors,
+  currentBgColor,
+  onColorChange
+}) => {
   const [pieces, setPieces] = useState(initialPieces);
   const [score, setScore] = useState(0);
   const [solvedPieces, setSolvedPieces] = useState(new Set());
   const [isSolved, setIsSolved] = useState(false);
-  
+
   useEffect(() => {
     setPieces(initialPieces);
     setSolvedPieces(new Set());
@@ -34,7 +44,6 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
   const gridSize = Math.sqrt(initialPieces.length);
   const pieceSize = BOARD_SIZE / gridSize;
 
-  // Check if a piece is in its correct position
   const isCorrectPosition = (piece) => {
     return piece.correctPosition.x === piece.currentPosition.x &&
            piece.correctPosition.y === piece.currentPosition.y;
@@ -44,11 +53,9 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
     setPieces(currentPieces => {
       console.log('Starting move:', { pieceId, newPosition });
 
-      // Find the moving piece
       const movingPiece = currentPieces.find(p => p.id === pieceId);
       const originalPosition = { ...movingPiece.currentPosition };
 
-      // Find piece in target position
       const pieceInTargetPosition = currentPieces.find(p => 
         p.id !== pieceId && 
         p.currentPosition.x === newPosition.x && 
@@ -62,7 +69,6 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
           'none'
       });
 
-      // Create new array and swap positions
       const newPieces = currentPieces.map(piece => {
         if (piece.id === pieceId) {
           const newPiece = {
@@ -70,7 +76,6 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
             currentPosition: { ...newPosition }
           };
           
-          // Check if piece landed in correct position
           if (isCorrectPosition(newPiece) && !solvedPieces.has(pieceId)) {
             setScore(prev => prev + 100);
             setSolvedPieces(prev => new Set([...prev, pieceId]));
@@ -79,13 +84,11 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
           return newPiece;
         } 
         else if (pieceInTargetPosition && piece.id === pieceInTargetPosition.id) {
-          // This is the piece that needs to move to the empty spot
           return {
             ...piece,
             currentPosition: { ...originalPosition }
           };
         }
-        // Leave all other pieces unchanged
         return piece;
       });
 
@@ -94,7 +97,6 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
         position: p.currentPosition
       })));
 
-      // Check if puzzle is solved
       const allCorrect = newPieces.every(isCorrectPosition);
       if (allCorrect && !isSolved) {
         setScore(prev => prev + 1000);
@@ -107,6 +109,12 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.levelContainer}>
+        <Text style={styles.levelText}>
+          Level {level === 'easy' ? '1' : '2'}
+        </Text>
+      </View>
+
       <View style={[styles.board, isSolved && styles.solvedBoard]}>
         <View style={styles.gridOverlay}>
           {Array.from({ length: gridSize * gridSize }).map((_, index) => (
@@ -144,7 +152,11 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
 
       {isSolved && (
         <View style={styles.solvedContainer}>
-          <Text style={styles.solvedText}>Puzzle Solved! +1000 points</Text>
+          <Text style={styles.solvedText}>
+            {level === 'easy' && currentCategoryIndex === CATEGORIES.length - 1 
+              ? 'Level 1 Complete! Moving to Level 2'
+              : 'Puzzle Solved! +1000 points'}
+          </Text>
           <TouchableOpacity 
             style={styles.nextButton}
             onPress={onNextPuzzle}
@@ -153,6 +165,16 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
           </TouchableOpacity>
         </View>
       )}
+
+      <View style={styles.colorPickerContainer}>
+        {bgColors.map((color, index) => (
+          <TouchableOpacity 
+            key={index} 
+            style={[styles.colorButton, { backgroundColor: color }]} 
+            onPress={() => onColorChange(color)} 
+          />
+        ))}
+      </View>
     </View>
   );
 };
@@ -166,7 +188,7 @@ const styles = StyleSheet.create({
   board: {
     width: BOARD_SIZE,
     height: BOARD_SIZE,
-    backgroundColor: '#8338ec',
+    // backgroundColor: '#8338ec',
     borderRadius: 8,
     position: 'relative',
   },
@@ -201,11 +223,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.9)',
     borderRadius: 12,
     alignItems: 'center',
+    zIndex: 1000,
   },
   solvedText: {
     color: 'gold',
     fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   nextButton: {
     marginTop: 20,
@@ -218,6 +242,34 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  levelContainer: {
+    position: 'absolute',
+    top: 60,
+    padding: 10,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  levelText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  colorPickerContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 20,
+    padding: 10,
+    backgroundColor: 'white',
+    // opacity: 0.5,
+    borderRadius: 8,
+  },
+  colorButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginHorizontal: 5,
+  },
 });
 
-export default PuzzleBoard; 
+export default PuzzleBoard;
