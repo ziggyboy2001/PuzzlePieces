@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Image, StyleSheet } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, { 
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
-  withSpring
+  withSpring,
+  runOnJS
 } from 'react-native-reanimated';
 
-const PuzzlePiece = ({ piece, pieceSize, onPieceMove, pieces }) => {
-  const translateX = useSharedValue(piece?.currentPosition?.x || 0);
-  const translateY = useSharedValue(piece?.currentPosition?.y || 0);
+const PuzzlePiece = ({ piece, pieceSize, onPieceMove }) => {
+  const translateX = useSharedValue(piece.currentPosition.x);
+  const translateY = useSharedValue(piece.currentPosition.y);
   const zIndex = useSharedValue(0);
+
+  useEffect(() => {
+    translateX.value = withSpring(piece.currentPosition.x);
+    translateY.value = withSpring(piece.currentPosition.y);
+  }, [piece.currentPosition.x, piece.currentPosition.y]);
 
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, context) => {
@@ -20,36 +26,16 @@ const PuzzlePiece = ({ piece, pieceSize, onPieceMove, pieces }) => {
       zIndex.value = 1;
     },
     onActive: (event, context) => {
-      if (event && context) {
-        translateX.value = context.startX + event.translationX;
-        translateY.value = context.startY + event.translationY;
-      }
+      translateX.value = context.startX + event.translationX;
+      translateY.value = context.startY + event.translationY;
     },
     onEnd: () => {
-      try {
-        const snapX = Math.round(translateX.value / pieceSize) * pieceSize;
-        const snapY = Math.round(translateY.value / pieceSize) * pieceSize;
-
-        const isOccupied = Array.isArray(pieces) && pieces.some(
-          p => p?.id !== piece?.id && 
-          p?.currentPosition?.x === snapX && 
-          p?.currentPosition?.y === snapY
-        );
-
-        if (!isOccupied) {
-          translateX.value = withSpring(snapX);
-          translateY.value = withSpring(snapY);
-          onPieceMove?.(piece?.id, { x: snapX, y: snapY });
-        } else {
-          translateX.value = withSpring(piece?.currentPosition?.x || 0);
-          translateY.value = withSpring(piece?.currentPosition?.y || 0);
-        }
-        
-        zIndex.value = 0;
-      } catch (error) {
-        console.warn('Error in gesture handler:', error);
-      }
-    },
+      const snapX = Math.round(translateX.value / pieceSize) * pieceSize;
+      const snapY = Math.round(translateY.value / pieceSize) * pieceSize;
+      
+      runOnJS(onPieceMove)(piece.id, { x: snapX, y: snapY });
+      zIndex.value = 0;
+    }
   });
 
   const animatedStyle = useAnimatedStyle(() => ({
