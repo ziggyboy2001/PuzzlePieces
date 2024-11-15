@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
 import PuzzlePiece from './PuzzlePiece';
 
 const { width } = Dimensions.get('window');
@@ -19,12 +19,18 @@ const getPositionFromCellIndex = (index, pieceSize, gridSize) => {
   };
 };
 
-const PuzzleBoard = ({ pieces: initialPieces, difficulty }) => {
+const PuzzleBoard = ({ pieces: initialPieces, difficulty, onNextPuzzle }) => {
   const [pieces, setPieces] = useState(initialPieces);
   const [score, setScore] = useState(0);
   const [solvedPieces, setSolvedPieces] = useState(new Set());
   const [isSolved, setIsSolved] = useState(false);
   
+  useEffect(() => {
+    setPieces(initialPieces);
+    setSolvedPieces(new Set());
+    setIsSolved(false);
+  }, [initialPieces]);
+
   const gridSize = Math.sqrt(initialPieces.length);
   const pieceSize = BOARD_SIZE / gridSize;
 
@@ -139,6 +145,12 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty }) => {
       {isSolved && (
         <View style={styles.solvedContainer}>
           <Text style={styles.solvedText}>Puzzle Solved! +1000 points</Text>
+          <TouchableOpacity 
+            style={styles.nextButton}
+            onPress={onNextPuzzle}
+          >
+            <Text style={styles.nextButtonText}>Next Puzzle</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -193,6 +205,17 @@ const styles = StyleSheet.create({
   solvedText: {
     color: 'gold',
     fontSize: 24,
+    fontWeight: 'bold',
+  },
+  nextButton: {
+    marginTop: 20,
+    backgroundColor: '#FFD700',
+    padding: 15,
+    borderRadius: 8,
+  },
+  nextButtonText: {
+    color: '#000',
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });

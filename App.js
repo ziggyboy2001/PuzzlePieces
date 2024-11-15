@@ -4,21 +4,45 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PuzzleBoard from './src/components/PuzzleBoard';
 import { createPuzzlePieces } from './src/utils/puzzleUtils';
 
-const category = 'bear';
+// Define the puzzle progression
+const CATEGORIES = ['bear', 'giraffe', 'puppy', 'pig', 'compilation'];
 
 export default function App() {
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState({
     id: '1',
     name: 'Bear Puzzle',
     difficulty: 'easy',
-    pieces: createPuzzlePieces(category, 'easy'),
+    pieces: createPuzzlePieces(CATEGORIES[0], 'easy'),
     completed: false,
-    points: 100,
   });
 
-  const handlePieceConnect = (piece1, piece2) => {
-    // Handle piece connection logic
-    // Update points and check for puzzle completion
+  const handleNextPuzzle = () => {
+    // Move to next category
+    const nextCategoryIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
+    const nextCategory = CATEGORIES[nextCategoryIndex];
+    
+    console.log('Moving to next puzzle:', {
+      fromCategory: CATEGORIES[currentCategoryIndex],
+      toCategory: nextCategory,
+      nextIndex: nextCategoryIndex
+    });
+    
+    setCurrentCategoryIndex(nextCategoryIndex);
+    setCurrentPuzzle(prevPuzzle => {
+      const newPuzzle = {
+        id: String(nextCategoryIndex + 1),
+        name: `${nextCategory.charAt(0).toUpperCase() + nextCategory.slice(1)} Puzzle`,
+        difficulty: 'easy',
+        pieces: createPuzzlePieces(nextCategory, 'easy'),
+        completed: false,
+      };
+      console.log('Created new puzzle:', {
+        category: nextCategory,
+        pieceCount: newPuzzle.pieces.length
+      });
+      return newPuzzle;
+    });
   };
 
   return (
@@ -27,7 +51,7 @@ export default function App() {
         <PuzzleBoard
           pieces={currentPuzzle.pieces}
           difficulty={currentPuzzle.difficulty}
-          onPieceConnect={handlePieceConnect}
+          onNextPuzzle={handleNextPuzzle}
         />
       </SafeAreaView>
     </GestureHandlerRootView>
