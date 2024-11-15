@@ -44,7 +44,6 @@ export const findNearestSnapPoint = (x, y, gridPositions, pieceSize) => {
   return null;
 };
 
-// Define all possible image paths
 const PUZZLE_IMAGES = {
   bear: {
     easy: [
@@ -64,8 +63,83 @@ const PUZZLE_IMAGES = {
       require('../../assets/images/bear/bear_9/bear_008.jpg'),
       require('../../assets/images/bear/bear_9/bear_009.jpg'),
     ]
-  }
-  // Add other categories as needed
+  },
+  compilation: {
+    easy: [
+      require('../../assets/images/compilation/compilation_4/compilation_001.jpg'),
+      require('../../assets/images/compilation/compilation_4/compilation_002.jpg'),
+      require('../../assets/images/compilation/compilation_4/compilation_003.jpg'),
+      require('../../assets/images/compilation/compilation_4/compilation_004.jpg'),
+    ],
+    medium: [
+      require('../../assets/images/compilation/compilation_9/compilation_001.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_002.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_003.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_004.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_005.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_006.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_007.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_008.jpg'),
+      require('../../assets/images/compilation/compilation_9/compilation_009.jpg'),
+    ]
+  },
+  giraffe: {
+    easy: [
+      require('../../assets/images/giraffe/giraffe_4/giraffe_001.jpg'),
+      require('../../assets/images/giraffe/giraffe_4/giraffe_002.jpg'),
+      require('../../assets/images/giraffe/giraffe_4/giraffe_003.jpg'),
+      require('../../assets/images/giraffe/giraffe_4/giraffe_004.jpg'),
+    ],
+    medium: [
+      require('../../assets/images/giraffe/giraffe_9/giraffe_001.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_002.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_003.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_004.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_005.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_006.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_007.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_008.jpg'),
+      require('../../assets/images/giraffe/giraffe_9/giraffe_009.jpg'),
+    ]
+  },
+  puppy: {
+    easy: [
+      require('../../assets/images/puppy/puppy_4/puppy_001.jpg'),
+      require('../../assets/images/puppy/puppy_4/puppy_002.jpg'),
+      require('../../assets/images/puppy/puppy_4/puppy_003.jpg'),
+      require('../../assets/images/puppy/puppy_4/puppy_004.jpg'),
+    ],
+    medium: [
+      require('../../assets/images/puppy/puppy_9/puppy_001.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_002.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_003.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_004.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_005.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_006.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_007.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_008.jpg'),
+      require('../../assets/images/puppy/puppy_9/puppy_009.jpg'),
+    ]
+  },
+  pig: {
+    easy: [
+      require('../../assets/images/pig/pig_4/pig_001.jpg'),
+      require('../../assets/images/pig/pig_4/pig_002.jpg'),
+      require('../../assets/images/pig/pig_4/pig_003.jpg'),
+      require('../../assets/images/pig/pig_4/pig_004.jpg'),
+    ],
+    medium: [
+      require('../../assets/images/pig/pig_9/pig_001.jpg'),
+      require('../../assets/images/pig/pig_9/pig_002.jpg'),
+      require('../../assets/images/pig/pig_9/pig_003.jpg'),
+      require('../../assets/images/pig/pig_9/pig_004.jpg'),
+      require('../../assets/images/pig/pig_9/pig_005.jpg'),
+      require('../../assets/images/pig/pig_9/pig_006.jpg'),
+      require('../../assets/images/pig/pig_9/pig_007.jpg'),
+      require('../../assets/images/pig/pig_9/pig_008.jpg'),
+      require('../../assets/images/pig/pig_9/pig_009.jpg'),
+    ]
+  },
 };
 
 export const createPuzzlePieces = (category, difficulty) => {

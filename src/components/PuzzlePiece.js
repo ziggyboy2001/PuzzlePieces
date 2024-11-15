@@ -9,7 +9,7 @@ import Animated, {
   runOnJS
 } from 'react-native-reanimated';
 
-const PuzzlePiece = ({ piece, pieceSize, onPieceMove }) => {
+const PuzzlePiece = ({ piece, pieceSize, onPieceMove, isLocked, isSolved }) => {
   const translateX = useSharedValue(piece.currentPosition.x);
   const translateY = useSharedValue(piece.currentPosition.y);
   const zIndex = useSharedValue(0);
@@ -21,15 +21,18 @@ const PuzzlePiece = ({ piece, pieceSize, onPieceMove }) => {
 
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, context) => {
+      if (isLocked) return;
       context.startX = translateX.value;
       context.startY = translateY.value;
       zIndex.value = 1;
     },
     onActive: (event, context) => {
+      if (isLocked) return;
       translateX.value = context.startX + event.translationX;
       translateY.value = context.startY + event.translationY;
     },
     onEnd: () => {
+      if (isLocked) return;
       const snapX = Math.round(translateX.value / pieceSize) * pieceSize;
       const snapY = Math.round(translateY.value / pieceSize) * pieceSize;
       
@@ -45,6 +48,8 @@ const PuzzlePiece = ({ piece, pieceSize, onPieceMove }) => {
     ],
     zIndex: zIndex.value,
     position: 'absolute',
+    borderWidth: isSolved ? 2 : 0,
+    borderColor: 'gold',
   }));
 
   return (

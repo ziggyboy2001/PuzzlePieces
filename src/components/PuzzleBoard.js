@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import PuzzlePiece from './PuzzlePiece';
 
 const { width } = Dimensions.get('window');
@@ -20,20 +20,19 @@ const getPositionFromCellIndex = (index, pieceSize, gridSize) => {
 };
 
 const PuzzleBoard = ({ pieces: initialPieces, difficulty }) => {
+  const [pieces, setPieces] = useState(initialPieces);
+  const [score, setScore] = useState(0);
+  const [solvedPieces, setSolvedPieces] = useState(new Set());
+  const [isSolved, setIsSolved] = useState(false);
+  
   const gridSize = Math.sqrt(initialPieces.length);
   const pieceSize = BOARD_SIZE / gridSize;
 
-  // Initialize cell occupancy
-  const [cellOccupancy, setCellOccupancy] = useState(() => {
-    const occupancy = {};
-    initialPieces.forEach(piece => {
-      const cellIndex = getCellIndexFromPosition(piece.currentPosition, pieceSize, gridSize);
-      occupancy[cellIndex] = piece.imageUrl;
-    });
-    return occupancy;
-  });
-
-  const [pieces, setPieces] = useState(initialPieces);
+  // Check if a piece is in its correct position
+  const isCorrectPosition = (piece) => {
+    return piece.correctPosition.x === piece.currentPosition.x &&
+           piece.correctPosition.y === piece.currentPosition.y;
+  };
 
   const handlePieceMove = (pieceId, newPosition) => {
     setPieces(currentPieces => {
@@ -60,11 +59,18 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty }) => {
       // Create new array and swap positions
       const newPieces = currentPieces.map(piece => {
         if (piece.id === pieceId) {
-          // This is the piece we're moving to the new position
-          return {
+          const newPiece = {
             ...piece,
             currentPosition: { ...newPosition }
           };
+          
+          // Check if piece landed in correct position
+          if (isCorrectPosition(newPiece) && !solvedPieces.has(pieceId)) {
+            setScore(prev => prev + 100);
+            setSolvedPieces(prev => new Set([...prev, pieceId]));
+          }
+          
+          return newPiece;
         } 
         else if (pieceInTargetPosition && piece.id === pieceInTargetPosition.id) {
           // This is the piece that needs to move to the empty spot
@@ -82,66 +88,113 @@ const PuzzleBoard = ({ pieces: initialPieces, difficulty }) => {
         position: p.currentPosition
       })));
 
+      // Check if puzzle is solved
+      const allCorrect = newPieces.every(isCorrectPosition);
+      if (allCorrect && !isSolved) {
+        setScore(prev => prev + 1000);
+        setIsSolved(true);
+      }
+
       return newPieces;
     });
   };
 
   return (
-    <View style={styles.board}>
-      <View style={styles.gridOverlay}>
-        {Array.from({ length: gridSize * gridSize }).map((_, index) => (
-          <View
-            key={`grid-${index}`}
-            style={[
-              styles.gridCell,
-              {
-                left: (index % gridSize) * pieceSize,
-                top: Math.floor(index / gridSize) * pieceSize,
-                width: pieceSize,
-                height: pieceSize
-              }
-            ]}
+    <View style={styles.container}>
+      <View style={[styles.board, isSolved && styles.solvedBoard]}>
+        <View style={styles.gridOverlay}>
+          {Array.from({ length: gridSize * gridSize }).map((_, index) => (
+            <View
+              key={`grid-${index}`}
+              style={[
+                styles.gridCell,
+                {
+                  left: (index % gridSize) * pieceSize,
+                  top: Math.floor(index / gridSize) * pieceSize,
+                  width: pieceSize,
+                  height: pieceSize,
+                  borderWidth: isSolved ? 0 : 1
+                }
+              ]}
+            />
+          ))}
+        </View>
+        
+        {pieces.map((piece) => (
+          <PuzzlePiece
+            key={piece.id}
+            piece={piece}
+            pieceSize={pieceSize}
+            onPieceMove={handlePieceMove}
+            isLocked={solvedPieces.has(piece.id)}
+            isSolved={isCorrectPosition(piece)}
           />
         ))}
       </View>
-      
-      {pieces.map((piece) => (
-        <PuzzlePiece
-          key={piece.id}
-          piece={piece}
-          pieceSize={pieceSize}
-          pieces={pieces}
-          onPieceMove={handlePieceMove}
-          cellIndex={getCellIndexFromPosition(piece.currentPosition, pieceSize, gridSize)}
-        />
-      ))}
+
+      <View style={styles.scoreContainer}>
+        <Text style={styles.scoreText}>Score: {score}</Text>
+      </View>
+
+      {isSolved && (
+        <View style={styles.solvedContainer}>
+          <Text style={styles.solvedText}>Puzzle Solved! +1000 points</Text>
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   board: {
     width: BOARD_SIZE,
     height: BOARD_SIZE,
     backgroundColor: '#8338ec',
     borderRadius: 8,
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -BOARD_SIZE / 2 }, { translateY: -BOARD_SIZE / 2 }],
+    position: 'relative',
+  },
+  solvedBoard: {
+    borderWidth: 4,
+    borderColor: 'gold',
   },
   gridOverlay: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    borderColor: "red",
-    borderWidth: 1,
   },
   gridCell: {
     position: 'absolute',
     borderColor: '#ddd',
-    borderWidth: 1,
-  }
+  },
+  scoreContainer: {
+    position: 'absolute',
+    top: 20,
+    padding: 10,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 8,
+  },
+  scoreText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  solvedContainer: {
+    position: 'absolute',
+    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  solvedText: {
+    color: 'gold',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
 });
 
 export default PuzzleBoard; 
