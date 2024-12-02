@@ -4,8 +4,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PuzzleBoard from './src/components/PuzzleBoard';
 import { createPuzzlePieces } from './src/utils/puzzleUtils';
 
-const CATEGORIES = ['bear', 'giraffe', 'puppy', 'pig', 'compilation'];
-const BG_COLOR = ['#bd24d1', '#8338ec', '#24d1b1', '#d12438', '#d1b724', '#cc6c23'];
+const CATEGORIES = ['bear', 'giraffe', 'puppy', 'pig', 'compilation', 'cherub', 'penguin', 'mermaid'];
+const BG_COLOR = ['#bd24d1', '#8338ec', '#d12438', '#d1b724', '#24d1bd', '#2438d1', '#6cf542'];
 
 export default function App() {
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
@@ -25,12 +25,24 @@ export default function App() {
     
     if (nextCategoryIndex === 0 && currentLevel === 'easy') {
       setCurrentLevel('medium');
-      setBgColor(BG_COLOR[0]);  // Reset color for Level 2
+      setCurrentCategoryIndex(0);
+      setBgColor(BG_COLOR[0]);
       setCurrentPuzzle({
-        id: String(nextCategoryIndex + 1),
+        id: '1',
         name: `${CATEGORIES[0].charAt(0).toUpperCase() + CATEGORIES[0].slice(1)} Puzzle - Level 2`,
         difficulty: 'medium',
         pieces: createPuzzlePieces(CATEGORIES[0], 'medium'),
+        completed: false,
+      });
+    } else if (nextCategoryIndex === 0 && currentLevel === 'medium') {
+      setCurrentLevel('easy');
+      setCurrentCategoryIndex(0);
+      setBgColor(BG_COLOR[0]);
+      setCurrentPuzzle({
+        id: '1',
+        name: `${CATEGORIES[0].charAt(0).toUpperCase() + CATEGORIES[0].slice(1)} Puzzle`,
+        difficulty: 'easy',
+        pieces: createPuzzlePieces(CATEGORIES[0], 'easy'),
         completed: false,
       });
     } else {
@@ -62,6 +74,7 @@ export default function App() {
           bgColors={BG_COLOR}
           currentBgColor={bgColor}
           onColorChange={handleColorChange}
+          currentCategory={CATEGORIES[currentCategoryIndex]}
         />
       </SafeAreaView>
     </GestureHandlerRootView>

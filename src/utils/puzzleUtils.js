@@ -140,6 +140,63 @@ const PUZZLE_IMAGES = {
       require('../../assets/images/pig/pig_9/pig_009.jpg'),
     ]
   },
+  cherub: {
+    easy: [
+      require('../../assets/images/cherub/cherub_4/cherub_001.jpg'),
+      require('../../assets/images/cherub/cherub_4/cherub_002.jpg'),
+      require('../../assets/images/cherub/cherub_4/cherub_003.jpg'),
+      require('../../assets/images/cherub/cherub_4/cherub_004.jpg'),
+    ],
+    medium: [
+      require('../../assets/images/cherub/cherub_9/cherub_001.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_002.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_003.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_004.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_005.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_006.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_007.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_008.jpg'),
+      require('../../assets/images/cherub/cherub_9/cherub_009.jpg'),
+    ]
+  },
+  penguin: {
+    easy: [
+      require('../../assets/images/penguin/penguin_4/penguin_001.jpg'),
+      require('../../assets/images/penguin/penguin_4/penguin_002.jpg'),
+      require('../../assets/images/penguin/penguin_4/penguin_003.jpg'),
+      require('../../assets/images/penguin/penguin_4/penguin_004.jpg'),
+    ],
+    medium: [
+      require('../../assets/images/penguin/penguin_9/penguin_001.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_002.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_003.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_004.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_005.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_006.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_007.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_008.jpg'),
+      require('../../assets/images/penguin/penguin_9/penguin_009.jpg'),
+    ]
+  },
+  mermaid: {
+    easy: [
+      require('../../assets/images/mermaid/mermaid_4/mermaid_001.jpg'),
+      require('../../assets/images/mermaid/mermaid_4/mermaid_002.jpg'),
+      require('../../assets/images/mermaid/mermaid_4/mermaid_003.jpg'),
+      require('../../assets/images/mermaid/mermaid_4/mermaid_004.jpg'),
+    ],
+    medium: [
+      require('../../assets/images/mermaid/mermaid_9/mermaid_001.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_002.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_003.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_004.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_005.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_006.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_007.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_008.jpg'),
+      require('../../assets/images/mermaid/mermaid_9/mermaid_009.jpg'),
+    ]
+  },
 };
 
 export const createPuzzlePieces = (category, difficulty) => {

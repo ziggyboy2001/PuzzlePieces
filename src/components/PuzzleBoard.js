@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Dimensions, Text, TouchableOpacity, Image } from 'react-native';
 import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 import PuzzlePiece from './PuzzlePiece';
 
 const { width } = Dimensions.get('window');
 const BOARD_SIZE = width * 0.9;
 
 const CATEGORIES = ['bear', 'giraffe', 'puppy', 'pig', 'compilation'];
+
+const FULL_IMAGES = {
+  bear: require('../../assets/images/bear/full_image/full.png'),
+  giraffe: require('../../assets/images/giraffe/full_image/full.png'),
+  puppy: require('../../assets/images/puppy/full_image/full.png'),
+  pig: require('../../assets/images/pig/full_image/full.png'),
+  compilation: require('../../assets/images/compilation/full_image/full.png'),
+  cherub: require('../../assets/images/cherub/full_image/full.png'),
+  penguin: require('../../assets/images/penguin/full_image/full.png'),
+  mermaid: require('../../assets/images/mermaid/full_image/full.png'),
+};
 
 const getCellIndexFromPosition = (position, pieceSize, gridSize) => {
   const row = Math.floor(position.y / pieceSize);
@@ -29,9 +41,11 @@ const PuzzleBoard = ({
   currentCategoryIndex,
   bgColors,
   currentBgColor,
-  onColorChange
+  onColorChange,
+  currentCategory
 }) => {
-  const [sound, setSound] = useState();
+  const [connectSound, setConnectSound] = useState();
+  const [pageSound, setPageSound] = useState();
   const [pieces, setPieces] = useState(initialPieces);
   const [score, setScore] = useState(0);
   const [solvedPieces, setSolvedPieces] = useState(new Set());
@@ -44,12 +58,11 @@ const PuzzleBoard = ({
   }, [initialPieces]);
 
   useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+    return () => {
+      if (connectSound) connectSound.unloadAsync();
+      if (pageSound) pageSound.unloadAsync();
+    };
+  }, [connectSound, pageSound]);
 
   const gridSize = Math.sqrt(initialPieces.length);
   const pieceSize = BOARD_SIZE / gridSize;
@@ -63,8 +76,21 @@ const PuzzleBoard = ({
     const { sound } = await Audio.Sound.createAsync(
       require('../../assets/sounds/connect.wav')
     );
-    setSound(sound);
+    setConnectSound(sound);
     await sound.playAsync();
+  };
+
+  const playPageSound = async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      require('../../assets/sounds/page-forward.wav')
+    );
+    setPageSound(sound);
+    await sound.playAsync();
+  };
+
+  const handleNextPuzzleWithSound = async () => {
+    await playPageSound();
+    onNextPuzzle();
   };
 
   const handlePieceMove = (pieceId, newPosition) => {
@@ -96,6 +122,7 @@ const PuzzleBoard = ({
           
           if (isCorrectPosition(newPiece) && !solvedPieces.has(pieceId)) {
             playConnectSound();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             setScore(prev => prev + 100);
             setSolvedPieces(prev => new Set([...prev, pieceId]));
           }
@@ -120,10 +147,18 @@ const PuzzleBoard = ({
       if (allCorrect && !isSolved) {
         setScore(prev => prev + 1000);
         setIsSolved(true);
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success
+        );
       }
 
       return newPieces;
     });
+  };
+
+  const handleColorChangeWithHaptics = (color) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onColorChange(color);
   };
 
   return (
@@ -133,6 +168,16 @@ const PuzzleBoard = ({
           Level {level === 'easy' ? '1' : '2'}
         </Text>
       </View>
+
+      <View style={styles.scoreContainer}>
+        <Text style={styles.scoreText}>Score: {score}</Text>
+      </View>
+
+      <Image 
+        source={FULL_IMAGES[currentCategory]}
+        style={styles.previewImage}
+        resizeMode="contain"
+      />
 
       <View style={[styles.board, isSolved && styles.solvedBoard]}>
         <View style={styles.gridOverlay}>
@@ -161,12 +206,17 @@ const PuzzleBoard = ({
             onPieceMove={handlePieceMove}
             isLocked={solvedPieces.has(piece.id)}
             isSolved={isCorrectPosition(piece)}
+            isPuzzleSolved={isSolved}
           />
         ))}
-      </View>
 
-      <View style={styles.scoreContainer}>
-        <Text style={styles.scoreText}>Score: {score}</Text>
+        {isSolved && (
+          <Image
+            source={FULL_IMAGES[currentCategory]}
+            style={styles.solvedOverlay}
+            resizeMode="contain"
+          />
+        )}
       </View>
 
       {isSolved && (
@@ -174,11 +224,13 @@ const PuzzleBoard = ({
           <Text style={styles.solvedText}>
             {level === 'easy' && currentCategoryIndex === CATEGORIES.length - 1 
               ? 'Level 1 Complete! Moving to Level 2'
-              : 'Puzzle Solved! +1000 points'}
+              : level === 'medium' && currentCategoryIndex === CATEGORIES.length - 1
+                ? 'All Puzzles Complete! Starting Over'
+                : 'Puzzle Solved! +1000 points'}
           </Text>
           <TouchableOpacity 
             style={styles.nextButton}
-            onPress={onNextPuzzle}
+            onPress={handleNextPuzzleWithSound}
           >
             <Text style={styles.nextButtonText}>Next Puzzle</Text>
           </TouchableOpacity>
@@ -189,8 +241,12 @@ const PuzzleBoard = ({
         {bgColors.map((color, index) => (
           <TouchableOpacity 
             key={index} 
-            style={[styles.colorButton, { backgroundColor: color }]} 
-            onPress={() => onColorChange(color)} 
+            style={[
+              styles.colorButton, 
+              { backgroundColor: color },
+              color === currentBgColor && styles.selectedColorButton
+            ]} 
+            onPress={() => handleColorChangeWithHaptics(color)} 
           />
         ))}
       </View>
@@ -210,10 +266,17 @@ const styles = StyleSheet.create({
     // backgroundColor: '#8338ec',
     borderRadius: 8,
     position: 'relative',
+    marginTop: 16,
   },
   solvedBoard: {
-    borderWidth: 4,
-    borderColor: 'gold',
+    shadowColor: 'gold',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   gridOverlay: {
     position: 'absolute',
@@ -238,6 +301,7 @@ const styles = StyleSheet.create({
   },
   solvedContainer: {
     position: 'absolute',
+    top: 120,
     padding: 20,
     backgroundColor: 'rgba(0,0,0,0.9)',
     borderRadius: 12,
@@ -288,6 +352,37 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginHorizontal: 5,
+    borderWidth: 2,
+    borderColor: 'transparent'
+  },
+  selectedColorButton: {
+    borderColor: 'white',
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  previewImage: {
+    width: BOARD_SIZE * 0.4,
+    height: BOARD_SIZE * 0.4,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+    marginTop: 0,
+  },
+  solvedOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    top: 0,
+    left: 0,
+    zIndex: 1000,
+    borderRadius: 8,  
   },
 });
 

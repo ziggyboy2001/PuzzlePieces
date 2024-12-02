@@ -9,7 +9,7 @@ import Animated, {
   runOnJS
 } from 'react-native-reanimated';
 
-const PuzzlePiece = ({ piece, pieceSize, onPieceMove, isLocked, isSolved }) => {
+const PuzzlePiece = ({ piece, pieceSize, onPieceMove, isLocked, isSolved, isPuzzleSolved }) => {
   const translateX = useSharedValue(piece.currentPosition.x);
   const translateY = useSharedValue(piece.currentPosition.y);
   const zIndex = useSharedValue(0);
@@ -48,8 +48,8 @@ const PuzzlePiece = ({ piece, pieceSize, onPieceMove, isLocked, isSolved }) => {
     ],
     zIndex: zIndex.value,
     position: 'absolute',
-    borderWidth: isSolved ? 2 : 0,
-    borderColor: 'gold',
+    borderWidth: (isSolved && !isPuzzleSolved) ? 3 : 0,
+    borderColor: (isSolved && !isPuzzleSolved) ? 'gold' : 'transparent',
   }));
 
   return (
